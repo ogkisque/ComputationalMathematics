@@ -261,6 +261,11 @@ def conjugate_gradients(A, b, x0=None, tol=1e-10, maxiter=5000):
 
     return x, residuals, maxiter
 
+def print_res(x):
+    for i in x:
+        print("{0:.4f}".format(i), end=' ')
+    print()
+
 def main():
     n = 10
     A = build_A(n)
@@ -269,18 +274,18 @@ def main():
     print('Матрица A (n=10)')
     print(A)
     print('\nПравая часть b:')
-    print(b)
+    print(b)  
 
     x_gauss = gauss_solve(A, b)
     r_gauss = np.linalg.norm(A @ x_gauss - b)
     print('\n1) Решение методом Гаусса с выбором главного элемента:')
-    print(x_gauss)
+    print_res(x_gauss)
     print('Невязка ||Ax-b||_2 =', r_gauss)
 
     x_lu = lu_solve(A, b)
     r_lu = np.linalg.norm(A @ x_lu - b)
     print('\n2) Решение методом LU разложения:')
-    print(x_lu)
+    print_res(x_lu)
     print('Невязка ||Ax-b||_2 =', r_lu)
 
     x0 = np.zeros(n)
@@ -289,33 +294,33 @@ def main():
 
     x_jacobi, res_jacobi, it_jacobi = jacobi(A, b, x0=x0, tol=tol, maxiter=maxiter)
     print('\n3) Решение методом Якоби (', it_jacobi, 'итераций):')
-    print(x_jacobi)
+    print_res(x_jacobi)
     print('Невязка ||Ax-b||_2 =', res_jacobi[-1])
 
     x_gs, res_gs, it_gs = gauss_seidel(A, b, x0=x0, tol=tol, maxiter=maxiter)
     print('\n4) Решение методом Гаусса-Зейделя (', it_gs, 'итераций):')
-    print(x_gs)
+    print_res(x_gs)
     print('Невязка ||Ax-b||_2 =', res_gs[-1])
 
     omega = 1.1
     x_sor, res_sor, it_sor = sor(A, b, omega=omega, x0=x0, tol=tol, maxiter=maxiter)
     print('\n5) Решение методом верхней реоаксации (', it_sor, 'итераций,', omega, 'итерационный параметр):')
-    print(x_sor)
+    print_res(x_sor)
     print('Невязка ||Ax-b||_2 =', res_sor[-1])
 
     x_gr, res_gr, it_gr = gradient_descent(A, b, x0=x0, tol=tol, maxiter=maxiter)
     print('\n6) Решение методом градиентного спуска (', it_gr, 'итераций):')
-    print(x_gr)
+    print_res(x_gr)
     print('Невязка ||Ax-b||_2 =', res_gr[-1])
 
     x_min, res_min, it_min = minimal_residuals(A, b, x0=x0, tol=tol, maxiter=maxiter)
     print('\n7) Решение методом минимальных невязок (', it_min, 'итераций):')
-    print(x_min)
+    print_res(x_min)
     print('Невязка ||Ax-b||_2 =', res_min[-1])
 
     x_con, res_con, it_con = conjugate_gradients(A, b, x0=x0, tol=tol, maxiter=maxiter)
     print('\n8) Решение методом сопряженных градиентов (', it_con, 'итераций):')
-    print(x_con)
+    print_res(x_con)
     print('Невязка ||Ax-b||_2 =', res_con[-1])
 
     plt.figure(figsize=(8,6))
