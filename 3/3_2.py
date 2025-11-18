@@ -11,7 +11,29 @@ import math
 import numpy as np
 
 def norm_inf(v):
-    return np.max(np.abs(v))
+    return np.linalg.norm(v)
+
+def gauss_solve(A_in, b_in):
+    A = A_in.astype(float).copy()
+    b = b_in.astype(float).copy()
+    n = A.shape[0]
+
+    for k in range(n - 1):
+        pivot = np.argmax(np.abs(A[k:n, k])) + k
+
+        if pivot != k:
+            A[[k, pivot], :] = A[[pivot, k], :]
+            b[[k, pivot]] = b[[pivot, k]]
+
+        for i in range(k + 1, n):
+            factor = A[i, k] / A[k, k]
+            A[i, k:] -= factor * A[k, k:]
+            b[i] -= factor * b[k]
+
+    x = np.zeros(n, dtype=float)
+    for i in range(n - 1, -1, -1):
+        x[i] = (b[i] - np.dot(A[i, i+1:], x[i+1:])) / A[i, i]
+    return x
 
 def bracket_search_scalar(phi, left, right, nsteps=1000):
     xs = np.linspace(left, right, nsteps+1)
@@ -19,10 +41,8 @@ def bracket_search_scalar(phi, left, right, nsteps=1000):
     brackets = []
     for i in range(1, len(xs)):
         x = xs[i]
-        try:
-            cur = phi(x)
-        except Exception:
-            cur = None
+        cur = phi(x)
+
         if cur is None:
             prev = cur
             continue
@@ -41,11 +61,10 @@ def bisection_scalar(phi, a, b, tol=1e-12, maxiter=200):
     fb = phi(b)
     if fa == 0.0: return a, 0
     if fb == 0.0: return b, 0
-    if fa*fb > 0:
-        raise ValueError("Не отличается знак на концах интервала для бисекции.")
+
     it = 0
-    while (b - a)/2.0 > tol and it < maxiter:
-        c = 0.5*(a + b)
+    while (b - a) / 2.0 > tol and it < maxiter:
+        c = 0.5 * (a + b)
         fc = phi(c)
         it += 1
         if fc == 0.0:
@@ -56,7 +75,7 @@ def bisection_scalar(phi, a, b, tol=1e-12, maxiter=200):
         else:
             a = c
             fa = fc
-    return 0.5*(a + b), it
+    return 0.5 * (a + b), it
 
 def F1(vec):
     x, y = vec
@@ -98,37 +117,29 @@ def G2(vec):
     return np.array([math.sqrt(1 + (y-0.6)*(y-0.6)) + 1.4,
                      math.sqrt((1.42 - 4.2*(x*x)) / 8.8)], dtype=float)
 
-# -----------------------
-# Многомерный Ньютон
-# -----------------------
 def newton_system(F, J, x0, tol=1e-12, maxiter=100):
     x = np.array(x0, dtype=float)
     for i in range(1, maxiter+1):
         Fx = F(x)
         Jx = J(x)
-        try:
-            delta = np.linalg.solve(Jx, -Fx)
-        except np.linalg.LinAlgError:
-            return x, i, False
+        #delta = np.linalg.solve(Jx, -Fx)
+        delta = gauss_solve(Jx, -Fx)
+
         x_new = x + delta
         if norm_inf(delta) < tol:
             return x_new, i, True
         x = x_new
     return x, maxiter, False
 
-# -----------------------
-# Модифицированный Ньютон
-# -----------------------
 def modified_newton_system(F, J, x0, tol=1e-12, maxiter=300):
     x = np.array(x0, dtype=float)
     J0 = J(x0)
     try:
         for i in range(1, maxiter+1):
             Fx = F(x)
-            try:
-                delta = np.linalg.solve(J0, -Fx)
-            except np.linalg.LinAlgError:
-                return x, i, False
+            #delta = np.linalg.solve(J0, -Fx)
+            delta = gauss_solve(J0, -Fx)
+
             x_new = x + delta
             if norm_inf(delta) < tol:
                 return x_new, i, True
