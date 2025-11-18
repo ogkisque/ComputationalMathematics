@@ -108,12 +108,11 @@ def G2(vec):
     return np.array([math.sqrt(1 + (y-0.6)*(y-0.6)) + 1.4,
                      math.sqrt((1.42 - 4.2*(x*x)) / 8.8)], dtype=float)
 
-def newton_system(F, J, x0, tol=1e-12, maxiter=100):
+def newton(F, J, x0, tol=1e-12, maxiter=100):
     x = np.array(x0, dtype=float)
     for i in range(1, maxiter+1):
         Fx = F(x)
         Jx = J(x)
-        #delta = np.linalg.solve(Jx, -Fx)
         delta = gauss_solve(Jx, -Fx)
 
         x_new = x + delta
@@ -122,13 +121,12 @@ def newton_system(F, J, x0, tol=1e-12, maxiter=100):
         x = x_new
     return x, maxiter, False
 
-def modified_newton_system(F, J, x0, tol=1e-12, maxiter=300):
+def modified_newton(F, J, x0, tol=1e-12, maxiter=300):
     x = np.array(x0, dtype=float)
     J0 = J(x0)
     try:
         for i in range(1, maxiter+1):
             Fx = F(x)
-            #delta = np.linalg.solve(J0, -Fx)
             delta = gauss_solve(J0, -Fx)
 
             x_new = x + delta
@@ -169,11 +167,11 @@ def solve_system1():
 
     # Метод Ньютона
     x0_newton = np.array([3.0, 1.0])
-    root_newt, it_newt, conv_newt = newton_system(F1, J1, x0_newton)
+    root_newt, it_newt, conv_newt = newton(F1, J1, x0_newton)
     print(f"Метод Ньютона от x0={x0_newton}: root={root_newt}, iter={it_newt}, ||F||={norm_inf(F1(root_newt))}")
 
     # Модифицированный метод Ньютона
-    root_mod, it_mod, conv_mod = modified_newton_system(F1, J1, x0_newton)
+    root_mod, it_mod, conv_mod = modified_newton(F1, J1, x0_newton)
     print(f"Модифицированный метод Ньютона от x0={x0_newton}: root={root_mod}, iter={it_mod}, ||F||={norm_inf(F1(root_mod))}")
 
 def solve_system2():
@@ -206,11 +204,11 @@ def solve_system2():
 
     # Метод Ньютона
     x0_newton = np.array([0.5, 0.5])
-    root_newt, it_newt, conv_newt = newton_system(F2, J2, x0_newton)
+    root_newt, it_newt, conv_newt = newton(F2, J2, x0_newton)
     print(f"Метод Ньютона от x0={x0_newton}: root={root_newt}, iter={it_newt}, ||F||={norm_inf(F2(root_newt))}")
 
     # Модифицированный Метод Ньютона
-    root_mod, it_mod, conv_mod = modified_newton_system(F2, J2, x0_newton)
+    root_mod, it_mod, conv_mod = modified_newton(F2, J2, x0_newton)
     print(f"Модифицированный Метод Ньютона от x0={x0_newton}: root={root_mod}, iter={it_mod}, ||F||={norm_inf(F2(root_mod))}")
 
 if __name__ == "__main__":
